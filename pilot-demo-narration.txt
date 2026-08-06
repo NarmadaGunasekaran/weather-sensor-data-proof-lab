@@ -1,0 +1,33 @@
+Welcome to the Weather Sensor Data Proof Lab.
+
+This demo explains a safe way to evaluate lossless weather-data compression. It uses synthetic weather-station data. A real deployment could run in a weather gateway or an API data pipeline. The live production system is not changed.
+
+Step one. We process ten normal sensor packets.
+
+For every packet, the tool takes an original weather reading, such as temperature, humidity, or wind speed, makes a smaller encoded packet, then decodes it back. It compares the decoded result with the original, byte for byte.
+
+The result is shown in Exact reconstruction. A passing result means the original weather value, sequence number, unit, and packet format were restored exactly. No reading was removed or changed.
+
+Step two. The tool compares two methods on the same captured packets.
+
+The first method is a sensor-specific delta profile. It uses the previous reading to store a smaller change. The second method is standard GZIP. It treats the packet as general data.
+
+The result is not a promise that one method always wins. It is a fair measurement on the same data. For a real customer, this comparison must use a larger representative dataset.
+
+Step three. We inject drift.
+
+Drift means the weather-data pattern changes. For example, wind speed may become much more variable during a storm, or temperature may begin changing quickly.
+
+The tool still checks that decoding is exact. But it also notices that the old compression profile is no longer as efficient. Therefore, the rollout gate says Investigate. The correct action is to test or retrain a new profile before expanding deployment.
+
+Step four. We corrupt one encoded packet.
+
+The checksum detects that the packet was changed or damaged. The decoder rejects it safely instead of creating an incorrect weather reading.
+
+Final result.
+
+This proof lab gives four results: measured payload saving, exact reconstruction, safe rejection of damaged packets, and a rollout recommendation.
+
+The customer can download a Compression Passport. It is an evidence report for engineering, security, and procurement teams. It records the validation results without including raw sensor values.
+
+The business value is simple. If a weather network sends less data while keeping every reading, it may reduce API, data, and cloud costs, create capacity for more weather stations, or send readings more frequently. These are estimates that must be confirmed on real devices and networks.

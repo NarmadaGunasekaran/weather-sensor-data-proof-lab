@@ -1,0 +1,12 @@
+{
+  "sensor_type": "motor vibration",
+  "agent_version": "v3.1",
+  "sampling_rate_hz": 2000,
+  "baseline_savings_percent": 67.0,
+  "current_savings_percent": 39.1,
+  "decode_hash_checks": "118400/118400 passed",
+  "decode_latency_ms": 0.66,
+  "latency_budget_ms": 1.0,
+  "rollout": "paused",
+  "observed_change": "Compression savings declined across four monitoring windows."
+}

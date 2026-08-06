@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Lossless weather API compression benchmark">
+    <title>Weather Compression Lab</title>
+    <style>
+      :root { --navy: #071b33; --ink: #12304d; --muted: #62758a; --blue: #2374e1; --sky: #e9f3ff; --mint: #e5f8ef; --green: #087443; --line: #dbe5ef; --paper: #ffffff; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f4f8fc; color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .page { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+      .hero { background: radial-gradient(circle at 82% 12%, #1a6cc8 0, transparent 26%), linear-gradient(135deg, #071b33, #0b3159); color: white; padding: 76px 0 82px; overflow: hidden; }
+      .eyebrow { color: #9dd4ff; font-size: .78rem; letter-spacing: .13em; text-transform: uppercase; font-weight: 700; }
+      h1 { font-size: clamp(2.4rem, 6vw, 4.8rem); max-width: 760px; letter-spacing: -.05em; line-height: .98; margin: 16px 0 22px; }
+      .lead { font-size: clamp(1.05rem, 2vw, 1.25rem); line-height: 1.55; max-width: 650px; color: #d5e8f8; }
+      .pill { display: inline-flex; align-items: center; gap: 8px; margin-top: 25px; padding: 9px 14px; border: 1px solid #547ca2; border-radius: 100px; color: #d8efff; font-size: .9rem; }
+      .dot { height: 8px; width: 8px; border-radius: 50%; background: #63e6a9; box-shadow: 0 0 12px #63e6a9; }
+      main { padding: 38px 0 64px; }
+      .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: -65px; position: relative; }
+      .metric, .card { background: var(--paper); border: 1px solid var(--line); border-radius: 17px; box-shadow: 0 10px 28px rgba(26, 67, 105, .08); }
+      .metric { padding: 23px 25px; }
+      .metric strong { display: block; color: var(--blue); font-size: 2.1rem; letter-spacing: -.05em; }
+      .metric span { display: block; margin-top: 5px; color: var(--muted); font-size: .9rem; }
+      .section { margin-top: 52px; }
+      h2 { margin: 0 0 11px; font-size: 1.65rem; letter-spacing: -.035em; }
+      .intro { color: var(--muted); line-height: 1.6; margin: 0 0 24px; max-width: 760px; }
+      .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 17px; }
+      .card { padding: 27px; }
+      .card-label { font-size: .76rem; font-weight: 800; text-transform: uppercase; letter-spacing: .11em; color: var(--blue); }
+      .card h3 { margin: 9px 0 11px; font-size: 1.3rem; letter-spacing: -.02em; }
+      .card p { margin: 0; color: var(--muted); line-height: 1.55; }
+      .card ul { padding-left: 18px; color: var(--ink); line-height: 1.8; margin: 17px 0 0; }
+      .chart { padding: 25px 28px 28px; }
+      .chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 27px; }
+      .chart-head p { margin: 0; color: var(--muted); font-size: .9rem; }
+      .bar-row { display: grid; grid-template-columns: 142px 1fr 76px; align-items: center; gap: 15px; margin: 16px 0; font-size: .94rem; }
+      .track { height: 30px; border-radius: 7px; background: #eaf0f6; overflow: hidden; }
+      .bar { height: 100%; border-radius: 7px; background: linear-gradient(90deg, #2474df, #62a1ee); min-width: 16px; display: flex; align-items: center; padding-left: 10px; color: white; font-size: .75rem; font-weight: 700; }
+      .bar.ai { background: linear-gradient(90deg, #00a777, #5cdca7); }
+      .value { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+      .winner { display: inline-block; padding: 4px 8px; border-radius: 99px; color: var(--green); background: var(--mint); font-size: .72rem; font-weight: 800; margin-left: 8px; vertical-align: middle; }
+      .verification { background: linear-gradient(135deg, #eaf7f0, #f7fffb); border: 1px solid #bae9d2; border-radius: 17px; padding: 26px 29px; display: flex; align-items: center; gap: 20px; }
+      .check { flex: 0 0 auto; height: 44px; width: 44px; display: grid; place-items: center; border-radius: 50%; color: white; background: var(--green); font-size: 1.45rem; }
+      .verification h3 { margin: 0 0 4px; font-size: 1.1rem; }
+      .verification p { margin: 0; color: #39725a; line-height: 1.5; }
+      .foot { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: .87rem; }
+      code { color: #31536f; font-size: .85em; word-break: break-all; }
+      @media (max-width: 720px) { .hero { padding: 56px 0 82px; } .metrics, .comparison { grid-template-columns: 1fr; } .bar-row { grid-template-columns: 105px 1fr 56px; gap: 9px; } .foot { display: block; } .foot p + p { margin-top: 10px; } }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="page">
+        <div class="eyebrow">Engineering case study · 2026</div>
+        <h1>Weather data, compressed without losing a single byte.</h1>
+        <p class="lead">A focused benchmark comparing a learned, signal-aware predictor against production-grade compression algorithms for one day of weather API data.</p>
+        <div class="pill"><span class="dot"></span> Every decompressed payload verified byte-for-byte</div>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="metrics" aria-label="Benchmark highlights">
+        <article class="metric"><strong>1,177 B</strong><span>Original daily weather JSON payload</span></article>
+        <article class="metric"><strong>64.7%</strong><span>Best data reduction, trained agent</span></article>
+        <article class="metric"><strong>6 / 6</strong><span>Methods passed exact round-trip validation</span></article>
+      </section>
+
+      <section class="section">
+        <h2>The design question</h2>
+        <p class="intro">Can an encoder that adapts to recurring patterns in time-series API data compete with established compression algorithms—while preserving the raw JSON response exactly, including key ordering and whitespace?</p>
+        <div class="comparison">
+          <article class="card">
+            <div class="card-label">Approach 01 · Train once</div>
+            <h3>Trained weather agent</h3>
+            <p>A lightweight model learns which byte usually follows each two-byte context from seven historical daily payloads. Runtime uses that fixed learned profile to encode exact residuals.</p>
+            <ul><li>Customised from representative samples</li><li>Portable, fingerprinted agent artifact</li><li>Strictly reversible residual encoding</li></ul>
+          </article>
+          <article class="card">
+            <div class="card-label">Approach 02 · Standard</div>
+            <h3>Established compressors</h3>
+            <p>zlib, gzip, bz2, and lzma operate on the raw JSON byte stream. They provide dependable baselines for compression ratio, speed, and operational simplicity.</p>
+            <ul><li>Battle-tested implementations</li><li>No data-specific model needed</li><li>Strong baseline for every dataset</li></ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section card chart">
+        <div class="chart-head">
+          <div><h2>Compressed size comparison</h2><p>Lower is better · source payload: 1,177 bytes</p></div>
+          <p>Exact lossless round trip: <strong>yes</strong></p>
+        </div>
+        <div class="bar-row"><span>trained agent <span class="winner">best</span></span><div class="track"><div class="bar ai" style="width:69.5%">415 B</div></div><span class="value">64.7% saved</span></div>
+        <div class="bar-row"><span>zlib-9</span><div class="track"><div class="bar" style="width:71%">424 B</div></div><span class="value">64.0% saved</span></div>
+        <div class="bar-row"><span>gzip-9</span><div class="track"><div class="bar" style="width:73%">436 B</div></div><span class="value">63.0% saved</span></div>
+        <div class="bar-row"><span>bz2-9</span><div class="track"><div class="bar" style="width:79%">472 B</div></div><span class="value">59.9% saved</span></div>
+        <div class="bar-row"><span>lzma-9</span><div class="track"><div class="bar" style="width:79%">476 B</div></div><span class="value">59.6% saved</span></div>
+        <div class="bar-row"><span>adaptive prototype</span><div class="track"><div class="bar ai" style="width:100%">597 B</div></div><span class="value">49.3% saved</span></div>
+      </section>
+
+      <section class="section verification">
+        <div class="check">✓</div>
+        <div><h3>Losslessness is tested, not assumed.</h3><p>Each output is decompressed and its SHA-256 hash is compared with the source: <code>40993b86b86cc4b5cc147d5b0cc381f75c25cf16677ad3f44244d54367d1e286</code>.</p></div>
+      </section>
+
+      <section class="section">
+        <h2>Train once. Compress anywhere. Reconstruct exactly.</h2>
+        <p class="intro">The proof of concept separates learning from runtime: the same fixed agent is used to encode and decode. Its fingerprint prevents accidental use of the wrong profile.</p>
+        <div class="comparison">
+          <article class="card"><div class="card-label">01 · Train</div><h3>Learn a profile</h3><p>Feed representative historical weather JSON into the trainer. It saves a small, portable prediction table.</p></article>
+          <article class="card"><div class="card-label">02 + 03 · Runtime</div><h3>Encode, then restore</h3><p>Encode new data using the fixed profile. The receiver uses the matching profile and exact residuals to recreate the original bytes.</p></article>
+        </div>
+      </section>
+
+      <footer class="foot"><p>Built with Python standard library only · Input can be any raw one-day JSON API response.</p><p>Run: <code>PYTHONPATH=src python3 -m weather_compression.benchmark weather-day.json</code></p></footer>
+    </main>
+  </body>
+</html>

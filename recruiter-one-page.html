@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Weather Data Compression Lab — One Page</title>
+    <style>
+      :root{--ink:#102940;--muted:#60778b;--blue:#2374df;--green:#08784b;--pale:#eef7ff;--line:#dce6ee}*{box-sizing:border-box}body{margin:0;background:#f3f7fa;color:var(--ink);font-family:Inter,system-ui,sans-serif}.page{width:min(1100px,calc(100% - 34px));margin:30px auto;padding:42px;background:#fff;border:1px solid var(--line);box-shadow:0 12px 34px #dce6ee}h1{font-size:clamp(2.2rem,5vw,4rem);letter-spacing:-.06em;margin:8px 0}h2{font-size:1.2rem;margin:0 0 8px}.eyebrow{font-size:.78rem;color:var(--blue);font-weight:800;letter-spacing:.1em}.intro{font-size:1.14rem;line-height:1.6;color:var(--muted);max-width:760px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}.card{padding:19px;border:1px solid var(--line);border-radius:12px}.card p,.small{color:var(--muted);line-height:1.5;margin:0}.step{display:grid;grid-template-columns:70px 1fr;gap:17px;margin:12px 0;padding:16px;background:var(--pale);border-radius:12px}.number{font-weight:800;font-size:2rem;color:var(--blue)}.result{padding:24px;background:#e8f8ef;border-left:5px solid var(--green);font-size:1.2rem;line-height:1.55}a{color:var(--blue);font-weight:750}@media(max-width:700px){.grid{grid-template-columns:1fr}.page{margin:0;width:100%;border:0}}
+    </style>
+  </head>
+  <body><main class="page">
+    <div class="eyebrow">PROJECT PORTFOLIO · QA + DATA QUALITY</div>
+    <h1>Weather Data Compression Lab</h1>
+    <p class="intro">A local Python web application that uploads weather data, compares a trained weather-aware lossless codec with standard algorithms, and proves the original file is restored exactly.</p>
+    <section class="grid"><article class="card"><h2>The input</h2><p>Weather API or weather-station JSON, CSV, or TXT data: temperature, humidity, or wind-speed readings.</p></article><article class="card"><h2>The comparison</h2><p>A transparent trained weather codec is compared fairly with GZIP, zlib, BZ2, LZMA, and an adaptive predictor.</p></article><article class="card"><h2>The proof</h2><p>Each output is decompressed. A SHA-256 and byte-for-byte check confirm that no original data changed.</p></article></section>
+    <h2>How it works</h2>
+    <div class="step"><div class="number">01</div><div><strong>Upload data</strong><p class="small">The app reads the file in memory. It does not save uploaded data.</p></div></div>
+    <div class="step"><div class="number">02</div><div><strong>Measure compression</strong><p class="small">It records compressed bytes plus encoding and decoding time for every method.</p></div></div>
+    <div class="step"><div class="number">03</div><div><strong>Verify losslessness</strong><p class="small">It accepts a result only after the decoded bytes exactly match the original upload.</p></div></div>
+    <section class="result"><strong>Why this matters:</strong> The project does not say “AI is always better.” It creates evidence. Users can see the best result for their data and confirm that every weather reading is preserved.</section>
+    <p class="small" style="margin-top:28px"><strong>Skills demonstrated:</strong> Python, Flask, upload validation, API/data testing, deterministic verification, benchmarking, regression tests, and clear reporting. &nbsp; <a href="webapp/app.py">Open Python app</a> · <a href="pilot-lab.html">Open interactive demo</a></p>
+  </main></body>
+</html>

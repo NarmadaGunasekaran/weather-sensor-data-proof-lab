@@ -1,0 +1,10 @@
+webapp/
+src/
+tests/
+examples/
+*.aiff
+*.wav
+*.pptx
+*.inspect.ndjson
+__pycache__/
+*.pyc
