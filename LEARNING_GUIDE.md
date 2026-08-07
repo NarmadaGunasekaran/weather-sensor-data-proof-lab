@@ -10,7 +10,7 @@ This is a small engineering demonstration. Its goal is to send a day of weather 
 
 Think of lossless compression like abbreviating a repeated sentence. If both sides know the same rules, `T+18` can stand for a longer phrase. The receiver expands it back perfectly.
 
-## The Bitteiler-style workflow in this project
+## The sensor-aware workflow in this project
 
 ### 1. Train once
 
@@ -53,7 +53,7 @@ The compressed file includes an agent fingerprint. If someone tries to decode wi
 
 > “I built a proof of concept for fully lossless weather API compression. It has a separate training phase that learns repeating patterns from historical data, then uses a fixed profile at runtime. I compare it with zlib, gzip, bz2, and lzma, and verify every method by decompressing and checking an exact SHA-256 hash.”
 
-Be accurate: this is **inspired by** Bitteiler’s train-once / encode-inline / decode-exactly architecture. It is not Bitteiler’s proprietary system, and its learning model is deliberately simple and auditable so the project can explain the core idea.
+Be accurate: this project demonstrates a general train-once / encode-inline / decode-exactly workflow. Its learning model is deliberately simple and auditable so the project can explain the core idea.
 
 ## How to demonstrate it
 

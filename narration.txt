@@ -12,4 +12,4 @@ Step three is reconstruction. The receiver has the same fixed agent. It makes th
 
 Finally, we compare the trained agent fairly with established compression methods: zlib, gzip, bz2, and lzma. Every result is decompressed and its checksum is compared with the source data. On the demo weather file, the trained agent uses four hundred fifteen bytes, saving sixty four point seven percent. Zlib uses four hundred twenty four bytes, saving sixty four percent.
 
-The honest conclusion is that this approach is promising for structured sensor data, but every real deployment needs its own larger benchmark. This project is inspired by Bitteiler’s train once, compress anywhere, reconstruct exactly approach. It is not Bitteiler’s proprietary technology.
+The honest conclusion is that this approach is promising for structured sensor data, but every real deployment needs its own larger benchmark. This independent prototype demonstrates a train-once, compress-anywhere, reconstruct-exactly workflow using a simple, auditable model.

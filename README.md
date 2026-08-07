@@ -57,7 +57,7 @@ export ANTHROPIC_API_KEY="your-key"
 PYTHONPATH=src python3 -m weather_compression.claude_insights examples/vibration_drift_report.json
 ```
 
-The trained-agent approach is deliberately transparent. It has a separate train-once phase and then uses a fixed profile at runtime; it does not claim to replicate Bitteiler's proprietary technology. Its design follows the same high-level principle described on [Bitteiler's technology page](https://www.bitteiler.com/technology): adapt encoding to the structure of sensor time-series data while preserving every value.
+The trained-agent approach is deliberately transparent. It has a separate train-once phase and then uses a fixed profile at runtime. It demonstrates a general sensor-aware compression principle: adapt encoding to the structure of time-series data while preserving every original value.
 
 Read `LEARNING_GUIDE.md` for a non-technical walkthrough and an interview-ready explanation.
 
