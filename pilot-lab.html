@@ -91,6 +91,25 @@
           D: Number((1013 + .35 * Math.sin(sequence / 5) + .12 * Math.sin(sequence / 2)).toFixed(1))
         }
       });
+      const multiPackets = [];
+      const loadMultiButton = document.createElement('button');
+      const multiLoadStatus = document.createElement('p');
+      const continueToProofButton = document.createElement('button');
+      loadMultiButton.id = 'loadMultiPacket';
+      loadMultiButton.className = 'secondary';
+      loadMultiButton.textContent = 'Load next packet (0 / 24)';
+      multiLoadStatus.className = 'multi-note';
+      multiLoadStatus.id = 'multiLoadStatus';
+      multiLoadStatus.innerHTML = '<strong>Step 1:</strong> load 24 incoming combined packets. The tool will not label any channel before the complete sample is available.';
+      continueToProofButton.className = 'secondary';
+      continueToProofButton.hidden = true;
+      continueToProofButton.textContent = 'Continue to lossless proof →';
+      $('analyseMulti').disabled = true;
+      $('analyseMulti').textContent = 'Analyse loaded packets';
+      $('analyseMulti').parentElement.append(loadMultiButton);
+      $('multiPacketPreview').textContent = 'No packet loaded yet.';
+      $('multiNote').before(multiLoadStatus);
+      $('multiNote').after(continueToProofButton);
       function describeChannel(channel, values) {
         const changes = values.slice(1).map((value, index) => Math.abs(value - values[index]));
         const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
@@ -105,19 +124,39 @@
         else if (mean >= 0 && mean <= 40 && averageChange >= .45) { label = 'Wind-speed-like'; confidence = 80; route = 'Test wind candidate + confirm unit'; }
         return { channel, label, confidence, route, mean, range, averageChange };
       }
+      function loadNextMultiPacket() {
+        if (multiPackets.length >= 24) return;
+        const packet = multiSensorPacket(multiPackets.length + 1);
+        multiPackets.push(packet);
+        $('multiPacketPreview').textContent = `Loaded packet ${packet.sequence} of 24\n${JSON.stringify(packet)}`;
+        loadMultiButton.textContent = multiPackets.length === 24 ? 'All 24 packets loaded ✓' : `Load next packet (${multiPackets.length} / 24)`;
+        multiLoadStatus.innerHTML = `<strong>Loading sample:</strong> ${multiPackets.length} of 24 combined packets are available. ${multiPackets.length === 24 ? 'The analysis button is now enabled.' : 'Load the next packet to continue.'}`;
+        if (multiPackets.length === 24) {
+          loadMultiButton.disabled = true;
+          $('analyseMulti').disabled = false;
+          $('multiResults').innerHTML = '<tr><td colspan="5">24 packets loaded. Click “Analyse loaded packets” to identify each anonymous channel.</td></tr>';
+        }
+      }
+      function loadAllMultiPackets() { while (multiPackets.length < 24) loadNextMultiPacket(); }
       function analyseMultiSensorPackets() {
-        const packets = Array.from({ length: 24 }, (_, index) => multiSensorPacket(index + 1));
+        if (multiPackets.length < 24) {
+          $('multiNote').textContent = `Analysis is locked. Load all 24 packets first; ${24 - multiPackets.length} more packet(s) are needed.`;
+          return;
+        }
+        const packets = multiPackets;
         const channelNames = Object.keys(packets[0].channels);
         const results = channelNames.map(channel => describeChannel(channel, packets.map(packet => packet.channels[channel])));
-        $('multiPacketPreview').textContent = JSON.stringify(packets[0]);
         $('multiResults').innerHTML = results.map(result => `<tr><td><strong>${result.channel}</strong></td><td>mean ${result.mean.toFixed(1)} · range ${result.range.toFixed(1)} · avg. change ${result.averageChange.toFixed(2)}</td><td>${result.label}</td><td>${result.confidence ? `${result.confidence}%` : 'Review'}</td><td class="route">${result.route}</td></tr>`).join('');
-        $('multiNote').textContent = 'Result: channels A–D were each observed across 24 combined packets and labelled separately. These are transparent, data-based suggestions—not proof. A production workflow confirms the suggested label with sensor metadata or a domain expert before selecting a specialised compression profile.';
+        $('multiNote').textContent = 'Result: channels A–D were observed across the 24 packets you loaded and labelled separately. These are transparent, data-based suggestions—not proof. The next workflow step is lossless validation for a selected, confirmed channel.';
+        continueToProofButton.textContent = `Continue: validate channel A (${results[0].label}) →`;
+        continueToProofButton.hidden = false;
       }
       async function runCompleteDemo() {
         if (timer) { clearInterval(timer); timer = undefined; $('start').textContent = '▶ Mirror stream'; }
         const button = $('runFullDemo');
         button.disabled = true;
         button.textContent = 'Running validation…';
+        loadAllMultiPackets();
         analyseMultiSensorPackets();
         for (let index = 0; index < 10; index += 1) processPacket();
         await compareBatch();
@@ -125,6 +164,12 @@
         button.textContent = 'Demo completed ✓';
       }
       $('analyseMulti').addEventListener('click', analyseMultiSensorPackets);
+      loadMultiButton.addEventListener('click', loadNextMultiPacket);
+      continueToProofButton.addEventListener('click', () => {
+        $('sensor').value = 'temperature';
+        reset();
+        showDashboard('proof');
+      });
       $('runFullDemo').addEventListener('click', runCompleteDemo);
       const dashboardViews = {
         overview: ['.controls', '.stats'],
