@@ -85,16 +85,22 @@
       const inputRouteLabel = document.createElement('label');
       const inputRouteSelect = document.createElement('select');
       const inputRouteNote = document.createElement('span');
+      const liveApiButton = document.createElement('button');
       inputRouteLabel.textContent = 'Pilot input path';
       inputRouteLabel.htmlFor = 'inputRoute';
       inputRouteSelect.id = 'inputRoute';
       inputRouteSelect.innerHTML = '<option value="Weather gateway">Weather gateway</option><option value="Weather API pipeline">Weather API pipeline</option>';
       inputRouteNote.className = 'hint';
       inputRouteNote.textContent = 'The proof runs on a mirrored copy; the production route stays unchanged.';
-      document.querySelector('.combined-source').append(inputRouteLabel, inputRouteSelect, inputRouteNote);
+      liveApiButton.id = 'loadLiveApi';
+      liveApiButton.className = 'secondary';
+      liveApiButton.textContent = 'Load live Open-Meteo sample';
+      liveApiButton.hidden = true;
+      document.querySelector('.combined-source').append(inputRouteLabel, inputRouteSelect, inputRouteNote, liveApiButton);
       inputRouteSelect.addEventListener('change', () => {
         document.querySelector('.combined-source strong').textContent = `Combined weather packet via ${inputRouteSelect.value}`;
         $('overviewStatus').innerHTML = `<strong>Input path selected:</strong> ${inputRouteSelect.value}. The demo mirrors packets for testing and does not alter the production route.`;
+        liveApiButton.hidden = inputRouteSelect.value !== 'Weather API pipeline';
       });
       const multiSensorPacket = sequence => ({
         station: 'weather-01',
@@ -146,6 +152,32 @@
           $('multiResults').innerHTML = '<tr><td colspan="5">10 packets captured from the Overview stream. Click “Analyse loaded packets” to identify each anonymous channel.</td></tr>';
         }
       }
+      async function loadLiveOpenMeteoSample() {
+        liveApiButton.disabled = true;
+        liveApiButton.textContent = 'Loading live API data…';
+        try {
+          const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.405&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,pressure_msl&forecast_hours=10&timezone=auto');
+          if (!response.ok) throw new Error(`API returned ${response.status}`);
+          const payload = await response.json();
+          const hourly = payload.hourly;
+          if (!hourly?.time || hourly.time.length < discoveryWindowSize) throw new Error('The API did not return ten hourly readings.');
+          multiPackets.splice(0, multiPackets.length, ...hourly.time.slice(0, discoveryWindowSize).map((time, index) => ({
+            station: 'open-meteo-berlin', time, sequence: index + 1,
+            channels: { A: hourly.temperature_2m[index], B: hourly.relative_humidity_2m[index], C: hourly.wind_speed_10m[index], D: hourly.pressure_msl[index] }
+          })));
+          const latest = multiPackets.at(-1);
+          $('multiPacketPreview').textContent = `Live Open-Meteo packet ${latest.sequence} of ${discoveryWindowSize}\n${JSON.stringify(latest)}`;
+          multiLoadStatus.innerHTML = `<strong>Live API sample loaded:</strong> ${discoveryWindowSize} hourly combined packets from Open-Meteo (Berlin) are ready for analysis. This data is mirrored in the browser; no production system is changed.`;
+          $('analyseMulti').disabled = false;
+          $('multiResults').innerHTML = '<tr><td colspan="5">Live API sample ready. Click “Analyse loaded packets” to identify each channel.</td></tr>';
+          $('overviewStatus').innerHTML = '<strong>Live API connected:</strong> Open-Meteo supplied ten combined hourly weather packets. Continue to Identify fields to analyse them.';
+        } catch (error) {
+          multiLoadStatus.innerHTML = `<strong>Live API unavailable:</strong> ${error.message}. You can still use the mirrored gateway simulation.`;
+        } finally {
+          liveApiButton.disabled = false;
+          liveApiButton.textContent = 'Load live Open-Meteo sample';
+        }
+      }
       function analyseMultiSensorPackets() {
         if (multiPackets.length < discoveryWindowSize) {
           $('multiNote').textContent = `Analysis is locked. Capture the ${discoveryWindowSize}-packet demo window from Overview first; ${discoveryWindowSize - multiPackets.length} more packet(s) are needed.`;
@@ -172,6 +204,7 @@
         button.textContent = 'Demo completed ✓';
       }
       $('analyseMulti').addEventListener('click', analyseMultiSensorPackets);
+      liveApiButton.addEventListener('click', loadLiveOpenMeteoSample);
       $('retrain').addEventListener('click', () => {
         state.version += 1;
         elements.version.textContent = `v${state.version}.0`;
