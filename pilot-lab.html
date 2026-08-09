@@ -92,21 +92,16 @@
         }
       });
       const multiPackets = [];
-      const loadMultiButton = document.createElement('button');
       const multiLoadStatus = document.createElement('p');
       const continueToProofButton = document.createElement('button');
-      loadMultiButton.id = 'loadMultiPacket';
-      loadMultiButton.className = 'secondary';
-      loadMultiButton.textContent = 'Load next packet (0 / 24)';
       multiLoadStatus.className = 'multi-note';
       multiLoadStatus.id = 'multiLoadStatus';
-      multiLoadStatus.innerHTML = '<strong>Step 1:</strong> load 24 incoming combined packets. The tool will not label any channel before the complete sample is available.';
+      multiLoadStatus.innerHTML = '<strong>Connected workflow:</strong> use “Process one packet” or “Mirror stream” on Overview. Each event captures one combined packet here. The tool will not label any channel before 24 packets are captured.';
       continueToProofButton.className = 'secondary';
       continueToProofButton.hidden = true;
       continueToProofButton.textContent = 'Continue to lossless proof →';
       $('analyseMulti').disabled = true;
       $('analyseMulti').textContent = 'Analyse loaded packets';
-      $('analyseMulti').parentElement.append(loadMultiButton);
       $('multiPacketPreview').textContent = 'No packet loaded yet.';
       $('multiNote').before(multiLoadStatus);
       $('multiNote').after(continueToProofButton);
@@ -124,23 +119,20 @@
         else if (mean >= 0 && mean <= 40 && averageChange >= .45) { label = 'Wind-speed-like'; confidence = 80; route = 'Test wind candidate + confirm unit'; }
         return { channel, label, confidence, route, mean, range, averageChange };
       }
-      function loadNextMultiPacket() {
+      function captureMultiPacketFromOverview() {
         if (multiPackets.length >= 24) return;
         const packet = multiSensorPacket(multiPackets.length + 1);
         multiPackets.push(packet);
-        $('multiPacketPreview').textContent = `Loaded packet ${packet.sequence} of 24\n${JSON.stringify(packet)}`;
-        loadMultiButton.textContent = multiPackets.length === 24 ? 'All 24 packets loaded ✓' : `Load next packet (${multiPackets.length} / 24)`;
-        multiLoadStatus.innerHTML = `<strong>Loading sample:</strong> ${multiPackets.length} of 24 combined packets are available. ${multiPackets.length === 24 ? 'The analysis button is now enabled.' : 'Load the next packet to continue.'}`;
+        $('multiPacketPreview').textContent = `Captured from Overview: packet ${packet.sequence} of 24\n${JSON.stringify(packet)}`;
+        multiLoadStatus.innerHTML = `<strong>Connected workflow:</strong> ${multiPackets.length} of 24 combined packets have been captured from Overview. ${multiPackets.length === 24 ? 'The analysis button is now enabled.' : 'Return to Overview and process or mirror more packets.'}`;
         if (multiPackets.length === 24) {
-          loadMultiButton.disabled = true;
           $('analyseMulti').disabled = false;
-          $('multiResults').innerHTML = '<tr><td colspan="5">24 packets loaded. Click “Analyse loaded packets” to identify each anonymous channel.</td></tr>';
+          $('multiResults').innerHTML = '<tr><td colspan="5">24 packets captured from the Overview stream. Click “Analyse loaded packets” to identify each anonymous channel.</td></tr>';
         }
       }
-      function loadAllMultiPackets() { while (multiPackets.length < 24) loadNextMultiPacket(); }
       function analyseMultiSensorPackets() {
         if (multiPackets.length < 24) {
-          $('multiNote').textContent = `Analysis is locked. Load all 24 packets first; ${24 - multiPackets.length} more packet(s) are needed.`;
+          $('multiNote').textContent = `Analysis is locked. Capture all 24 packets from Overview first; ${24 - multiPackets.length} more packet(s) are needed.`;
           return;
         }
         const packets = multiPackets;
@@ -156,7 +148,7 @@
         const button = $('runFullDemo');
         button.disabled = true;
         button.textContent = 'Running validation…';
-        loadAllMultiPackets();
+        while (multiPackets.length < 24) processPacket();
         analyseMultiSensorPackets();
         for (let index = 0; index < 10; index += 1) processPacket();
         await compareBatch();
@@ -164,7 +156,9 @@
         button.textContent = 'Demo completed ✓';
       }
       $('analyseMulti').addEventListener('click', analyseMultiSensorPackets);
-      loadMultiButton.addEventListener('click', loadNextMultiPacket);
+      const originalProcessPacket = processPacket;
+      processPacket = () => { originalProcessPacket(); captureMultiPacketFromOverview(); };
+      $('step').addEventListener('click', captureMultiPacketFromOverview);
       continueToProofButton.addEventListener('click', () => {
         $('sensor').value = 'temperature';
         reset();
