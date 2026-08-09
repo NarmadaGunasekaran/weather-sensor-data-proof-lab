@@ -11,7 +11,7 @@ The easiest place to start is `pilot-lab.html`.
 It includes six small dashboard views:
 
 - **Overview** — choose a weather gateway or weather API pipeline, process packets, and see the lossless proof.
-- **Identify fields** — collect ten combined packets and label anonymous channels. The live API path uses the field names supplied by the API; unknown packets use a cautious signal-based suggestion.
+- **Identify fields** — collect ten combined packets and label anonymous channels. The live API path uses the field names supplied by the API, unknown packets use a cautious signal-based suggestion.
 - **Compare methods** — compare the compact example format with browser GZIP on the same captured packets.
 - **Business impact** — simple estimates for capacity, sampling rate, and data cost.
 - **Evidence report** — download a JSON summary of the validation run.
