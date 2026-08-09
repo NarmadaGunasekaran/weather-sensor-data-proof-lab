@@ -114,6 +114,7 @@
       });
       const discoveryWindowSize = 10;
       const multiPackets = [];
+      let knownChannelLabels = null;
       const multiLoadStatus = document.createElement('p');
       const continueToProofButton = document.createElement('button');
       multiLoadStatus.className = 'multi-note';
@@ -135,7 +136,8 @@
         let label = 'Unknown / human review';
         let confidence = 0;
         let route = 'Generic lossless fallback + request metadata';
-        if (mean > 900 && range < 3) { label = 'Pressure-like'; confidence = 95; route = 'Test pressure candidate + confirm unit'; }
+        if (knownChannelLabels?.[channel]) { ({ label, confidence, route } = knownChannelLabels[channel]); }
+        else if (mean > 900 && range < 3) { label = 'Pressure-like'; confidence = 95; route = 'Test pressure candidate + confirm unit'; }
         else if (mean >= 35 && mean <= 100 && averageChange < 2) { label = 'Humidity-like'; confidence = 88; route = 'Test humidity candidate + confirm unit'; }
         else if (mean >= -40 && mean <= 45 && range < 5 && averageChange < .45) { label = 'Temperature-like'; confidence = 90; route = 'Test temperature candidate + confirm unit'; }
         else if (mean >= 0 && mean <= 40 && averageChange >= .45) { label = 'Wind-speed-like'; confidence = 80; route = 'Test wind candidate + confirm unit'; }
@@ -143,6 +145,7 @@
       }
       function captureMultiPacketFromOverview() {
         if (multiPackets.length >= discoveryWindowSize) return;
+        if (!multiPackets.length) knownChannelLabels = null;
         const packet = multiSensorPacket(multiPackets.length + 1);
         multiPackets.push(packet);
         $('multiPacketPreview').textContent = `Captured from Overview: packet ${packet.sequence} of ${discoveryWindowSize}\n${JSON.stringify(packet)}`;
@@ -165,6 +168,12 @@
             station: 'open-meteo-berlin', time, sequence: index + 1,
             channels: { A: hourly.temperature_2m[index], B: hourly.relative_humidity_2m[index], C: hourly.wind_speed_10m[index], D: hourly.pressure_msl[index] }
           })));
+          knownChannelLabels = {
+            A: { label: 'Temperature (2 m)', confidence: 100, route: 'API metadata confirmed · test temperature profile' },
+            B: { label: 'Relative humidity (2 m)', confidence: 100, route: 'API metadata confirmed · test humidity profile' },
+            C: { label: 'Wind speed (10 m)', confidence: 100, route: 'API metadata confirmed · test wind profile' },
+            D: { label: 'Mean sea-level pressure', confidence: 100, route: 'API metadata confirmed · test pressure profile' }
+          };
           const latest = multiPackets.at(-1);
           $('multiPacketPreview').textContent = `Live Open-Meteo packet ${latest.sequence} of ${discoveryWindowSize}\n${JSON.stringify(latest)}`;
           multiLoadStatus.innerHTML = `<strong>Live API sample loaded:</strong> ${discoveryWindowSize} hourly combined packets from Open-Meteo (Berlin) are ready for analysis. This data is mirrored in the browser; no production system is changed.`;
