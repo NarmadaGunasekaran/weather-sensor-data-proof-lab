@@ -158,6 +158,12 @@
         button.textContent = 'Demo completed ✓';
       }
       $('analyseMulti').addEventListener('click', analyseMultiSensorPackets);
+      $('retrain').addEventListener('click', () => {
+        state.version += 1;
+        elements.version.textContent = `v${state.version}.0`;
+        $('packetResult').textContent = `Profile retrained as v${state.version}.0. Process the next packet to validate it.`;
+        $('packetResult').style.color = 'var(--green)';
+      });
       const originalProcessPacket = processPacket;
       processPacket = () => { originalProcessPacket(); captureMultiPacketFromOverview(); };
       $('step').addEventListener('click', captureMultiPacketFromOverview);
