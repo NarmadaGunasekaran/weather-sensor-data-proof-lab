@@ -82,6 +82,20 @@
       const dashboardRender = render;
       render = () => { dashboardRender(); renderDiscovery(); };
       document.querySelector('.technical')?.remove();
+      const inputRouteLabel = document.createElement('label');
+      const inputRouteSelect = document.createElement('select');
+      const inputRouteNote = document.createElement('span');
+      inputRouteLabel.textContent = 'Pilot input path';
+      inputRouteLabel.htmlFor = 'inputRoute';
+      inputRouteSelect.id = 'inputRoute';
+      inputRouteSelect.innerHTML = '<option value="Weather gateway">Weather gateway</option><option value="Weather API pipeline">Weather API pipeline</option>';
+      inputRouteNote.className = 'hint';
+      inputRouteNote.textContent = 'The proof runs on a mirrored copy; the production route stays unchanged.';
+      document.querySelector('.combined-source').append(inputRouteLabel, inputRouteSelect, inputRouteNote);
+      inputRouteSelect.addEventListener('change', () => {
+        document.querySelector('.combined-source strong').textContent = `Combined weather packet via ${inputRouteSelect.value}`;
+        $('overviewStatus').innerHTML = `<strong>Input path selected:</strong> ${inputRouteSelect.value}. The demo mirrors packets for testing and does not alter the production route.`;
+      });
       const multiSensorPacket = sequence => ({
         station: 'weather-01',
         sequence,
