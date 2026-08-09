@@ -168,13 +168,13 @@
       continueToProofButton.addEventListener('click', () => {
         $('sensor').value = 'temperature';
         reset();
-        showDashboard('proof');
+        showDashboard('overview');
+        setTimeout(() => $('proof').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
       });
       $('runFullDemo').addEventListener('click', runCompleteDemo);
       const dashboardViews = {
-        overview: ['.controls', '.stats'],
+        overview: ['.controls', '.stats', '#proof', '.timeseries'],
         identify: ['#discovery', '.technical'],
-        proof: ['#proof', '.timeseries'],
         compare: ['#comparison'],
         impact: ['.bottom', '#impact'],
         evidence: ['#passport']
@@ -183,6 +183,7 @@
         const section = document.querySelector(selector);
         if (section) section.dataset.dashboard = view;
       }));
+      document.querySelector('.dashboard-tab[data-view="proof"]')?.remove();
       function showDashboard(view) {
         document.querySelectorAll('[data-dashboard]').forEach(section => section.classList.toggle('dashboard-hidden', section.dataset.dashboard !== view));
         document.querySelectorAll('.dashboard-tab').forEach(tab => tab.classList.toggle('active', tab.dataset.view === view));
